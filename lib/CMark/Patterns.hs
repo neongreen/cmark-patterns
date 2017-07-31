@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
 
@@ -16,66 +17,71 @@
 -- Each pattern comes in two versions; if you don't care about position info,
 -- use the one with the underscore. (If you try to use it for construction,
 -- it will use 'Nothing' as position info.)
+--
+-- Since list items can only contain 'ITEM', we provide additional patterns
+-- for lists – 'ItemList' and 'ItemList_' – which automatically unwrap them.
 module CMark.Patterns
 (
-  -- ** DOCUMENT
+  -- ** 'DOCUMENT'
   pattern Document,
   pattern Document_,
-  -- ** THEMATIC_BREAK (has no children)
+  -- ** 'THEMATIC_BREAK' (has no children)
   pattern ThematicBreak,
   pattern ThematicBreak_,
-  -- ** PARAGRAPH
+  -- ** 'PARAGRAPH'
   pattern Paragraph,
   pattern Paragraph_,
-  -- ** BLOCK_QUOTE
+  -- ** 'BLOCK_QUOTE'
   pattern BlockQuote,
   pattern BlockQuote_,
-  -- ** HTML_BLOCK (has no children)
+  -- ** 'HTML_BLOCK' (has no children)
   pattern HtmlBlock,
   pattern HtmlBlock_,
-  -- ** CUSTOM_BLOCK
+  -- ** 'CUSTOM_BLOCK'
   pattern CustomBlock,
   pattern CustomBlock_,
-  -- ** CODE_BLOCK (has no children)
+  -- ** 'CODE_BLOCK' (has no children)
   pattern CodeBlock,
   pattern CodeBlock_,
-  -- ** HEADING
+  -- ** 'HEADING'
   pattern Heading,
   pattern Heading_,
-  -- ** LIST
+  -- ** 'LIST'
   pattern List,
   pattern List_,
-  -- ** ITEM
+  pattern ItemList,
+  pattern ItemList_,
+  -- ** 'ITEM'
   pattern Item,
   pattern Item_,
-  -- ** TEXT (has no children)
+  -- ** 'TEXT' (has no children)
   pattern Text,
   pattern Text_,
-  -- ** SOFTBREAK (has no children)
+  -- ** 'SOFTBREAK' (has no children)
   pattern Softbreak,
   pattern Softbreak_,
-  -- ** LINEBREAK (has no children)
+  -- ** 'LINEBREAK' (has no children)
   pattern Linebreak,
   pattern Linebreak_,
-  -- ** HTML_INLINE (has no children)
+  -- ** 'HTML_INLINE' (has no children)
   pattern HtmlInline,
   pattern HtmlInline_,
-  -- ** CUSTOM_INLINE
+  -- ** 'CUSTOM_INLINE'
   pattern CustomInline,
   pattern CustomInline_,
-  -- ** CODE (has no children)
+  -- ** 'CODE' (has no children)
   pattern Code,
   pattern Code_,
-  -- ** EMPH
+  -- ** 'EMPH'
   pattern Emph,
   pattern Emph_,
-  -- ** STRONG
+  -- ** 'STRONG'
   pattern Strong,
   pattern Strong_,
-  -- ** LINK
+  -- ** 'LINK'
   pattern Link,
   pattern Link_,
-  -- ** IMAGE
+  -- ** 'IMAGE'
   pattern Image,
   pattern Image_,
 )
@@ -200,3 +206,19 @@ pattern Link_ url title xs <- Link _       url title xs
 
 pattern Image_ url title xs <- Image _       url title xs
   where Image_ url title xs =  Image Nothing url title xs
+
+----------------------------------------------------------------------------
+-- ItemList
+----------------------------------------------------------------------------
+
+unwrapItems :: [Node] -> [(Maybe PosInfo, [Node])]
+unwrapItems is = [(pos, xs) | Item pos xs <- is]
+
+unwrapItems_ :: [Node] -> [[Node]]
+unwrapItems_ is = [xs | Item_ xs <- is]
+
+pattern ItemList pos attrs xs <- Node pos (LIST attrs) (unwrapItems -> xs)
+  where ItemList pos attrs xs =  Node pos (LIST attrs) (map (uncurry Item) xs)
+
+pattern ItemList_ attrs xs <- Node _       (LIST attrs) (unwrapItems_ -> xs)
+  where ItemList_ attrs xs =  Node Nothing (LIST attrs) (map Item_ xs)
