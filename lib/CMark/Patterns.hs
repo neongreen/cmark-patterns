@@ -1,9 +1,12 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE CPP #-}
 
 -- We can't provide all signatures anyway because CMark doesn't export
 -- OnEnter and OnExit (which are needed to provide a signature for e.g.
 -- CustomBlock)
+#if __GLASGOW_HASKELL__ >= 800
 {-# OPTIONS -fno-warn-missing-pattern-synonym-signatures #-}
+#endif
 
 
 -- |
