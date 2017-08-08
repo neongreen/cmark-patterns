@@ -12,14 +12,15 @@
 
 -- |
 -- <https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#ghc-flag--XPatternSynonyms Pattern synonyms>
--- for working with the cmark AST. You can construct and deconstruct the AST with them as if they were ordinary constructors.
+-- for working with the cmark AST. You can construct and deconstruct the AST
+-- with them as if they were ordinary constructors.
 --
 -- Each pattern comes in two versions; if you don't care about position info,
 -- use the one with the underscore. (If you try to use it for construction,
 -- it will use 'Nothing' as position info.)
 --
 -- Since list items can only contain 'ITEM', we provide additional patterns
--- for lists – 'ItemList' and 'ItemList_' – which automatically unwrap them.
+-- for lists – 'ListItems' and 'ListItems_' – which automatically unwrap them.
 module CMark.Patterns
 (
   -- ** 'DOCUMENT'
@@ -49,8 +50,8 @@ module CMark.Patterns
   -- ** 'LIST'
   pattern List,
   pattern List_,
-  pattern ItemList,
-  pattern ItemList_,
+  pattern ListItems,
+  pattern ListItems_,
   -- ** 'ITEM'
   pattern Item,
   pattern Item_,
@@ -208,7 +209,7 @@ pattern Image_ url title xs <- Image _       url title xs
   where Image_ url title xs =  Image Nothing url title xs
 
 ----------------------------------------------------------------------------
--- ItemList
+-- ListItems
 ----------------------------------------------------------------------------
 
 unwrapItems :: [Node] -> [(Maybe PosInfo, [Node])]
@@ -217,8 +218,8 @@ unwrapItems is = [(pos, xs) | Item pos xs <- is]
 unwrapItems_ :: [Node] -> [[Node]]
 unwrapItems_ is = [xs | Item_ xs <- is]
 
-pattern ItemList pos attrs xs <- Node pos (LIST attrs) (unwrapItems -> xs)
-  where ItemList pos attrs xs =  Node pos (LIST attrs) (map (uncurry Item) xs)
+pattern ListItems pos attrs xs <- Node pos (LIST attrs) (unwrapItems -> xs)
+  where ListItems pos attrs xs =  Node pos (LIST attrs) (map (uncurry Item) xs)
 
-pattern ItemList_ attrs xs <- Node _       (LIST attrs) (unwrapItems_ -> xs)
-  where ItemList_ attrs xs =  Node Nothing (LIST attrs) (map Item_ xs)
+pattern ListItems_ attrs xs <- Node _       (LIST attrs) (unwrapItems_ -> xs)
+  where ListItems_ attrs xs =  Node Nothing (LIST attrs) (map Item_ xs)
